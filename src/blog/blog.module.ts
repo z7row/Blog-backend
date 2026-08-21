@@ -6,13 +6,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Blog, BlogSchema, Comment } from './schema/blog.schema';
 import { AuthModule } from '../auth/auth.module';
 import { CloudinaryService } from './cloudinary.service';
+import { User, UserSchema } from '../users/schema/user.schema';
 
 
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),MongooseModule.forFeature([{ name: Comment.name, schema: BlogSchema }]),AuthModule],
-  controllers: [BlogController, ],
-  providers: [BlogService,CloudinaryService],
+  imports: [MongooseModule.forFeature([{ name: Blog.name, schema: BlogSchema }]),
+  MongooseModule.forFeature([{ name: Comment.name, schema: BlogSchema }]),
+   MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])],
+
+  controllers: [BlogController,],
+  providers: [BlogService, CloudinaryService],
   exports: [BlogService, CloudinaryService]
 })
-export class BlogModule {}
+export class BlogModule { }

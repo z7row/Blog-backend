@@ -5,10 +5,10 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }))
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true,transform: true,forbidNonWhitelisted: true, }))
   const config = new DocumentBuilder()
     .setTitle('Dovcan')
-    .setDescription('APi fast good amazing 😂')
+    .setDescription('APi fast good amazing')
     .setVersion('1.0')
     .addTag('Blogs')
     .build();

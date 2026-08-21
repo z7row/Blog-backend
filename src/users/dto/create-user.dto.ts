@@ -10,6 +10,9 @@ export class CreateUserDto {
   @ApiProperty({ example: 'Zeyad' })
   @IsString()
   name!: string;
+  @ApiProperty({ example: 'Zeyad' })
+  @IsString()
+  pio?: string;
 
   @ApiProperty({ example: 'zeyad@example.com' })
   @IsEmail()
@@ -19,11 +22,6 @@ export class CreateUserDto {
   @IsString()
   @MinLength(6)
   password!: string;
-
-  @ApiPropertyOptional({ enum: UserRole, default: UserRole.USER })
-  @IsEnum(UserRole)
-  @IsOptional()
-  role?: UserRole = UserRole.USER;
 
 
 

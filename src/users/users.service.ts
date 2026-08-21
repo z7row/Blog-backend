@@ -44,9 +44,10 @@ export class UsersService {
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
+    const { name, pio, profilephoto, banner } = updateUserDto;
     const updatedUser = await this.userModel.findByIdAndUpdate(
       id,
-      updateUserDto,
+      { name, pio, profilephoto, banner },
       { returnDocument: 'after' }
     );
 

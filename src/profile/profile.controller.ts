@@ -6,6 +6,7 @@ import { BlogService } from '../blog/blog.service';
 import { CloudinaryService } from '../blog/cloudinary.service';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UpdateUserDto } from '../users/dto/update-user.dto';
+import { ParseObjectIdPipe } from '@nestjs/mongoose';
 
 @Controller('profile')
 export class ProfileController {
@@ -23,7 +24,7 @@ export class ProfileController {
   }
 
   @Get(':id')
-  profileUser(@Param('id') id: string) {
+  profileUser(@Param('id', ParseObjectIdPipe) id: string) {
     const userId = id;
     const user = this.blogService.findOne(userId);
 
@@ -79,7 +80,7 @@ export class ProfileController {
 
 
   @UseGuards(JwtAuthGuard)
-  @Get('me/edit/')
+  @Post('me/edit/')
   edit(@Request() req, @Body() UpdateUserDto: UpdateUserDto) {
     const userId = req.user.userId;
     const user = this.blogService.findOne(userId);
@@ -109,7 +110,7 @@ export class ProfileController {
   @Get('me/get-comments/')
   comments(
     @Request() req,
-     @Query('page') page?: number,
+    @Query('page') page?: number,
     @Query('limit') limit?: number,) {
     const userId = req.user.userId;
     const user = this.blogService.findOne(userId);
@@ -117,11 +118,11 @@ export class ProfileController {
     if (!user) {
       throw new NotFoundException('user not found');
     }
-    return this.blogService.getUserBlogs(userId, page, limit);
+    return this.blogService.getUserComments(userId, page, limit);
   }
 
 
-@Get('user/:userId')
+  @Get('/:userId/get-comments/')
   async getUserComments(
     @Param('userId') userId: string,
     @Query('page') page?: number,
@@ -129,4 +130,5 @@ export class ProfileController {
   ) {
     return this.blogService.getUserComments(userId, page, limit);
   }
+
 }
