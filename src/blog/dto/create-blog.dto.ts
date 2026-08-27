@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
 
 export class CreateBlogDto {
   @ApiProperty({ example: 'title' })
@@ -11,6 +12,12 @@ export class CreateBlogDto {
   @IsString()
   @IsNotEmpty()
   content!: string;
+
+
+  @ApiProperty({ enum: ["post" , "blog"]})
+  @IsString()
+  @IsIn(["post", "blog"])
+  type!: string;
 
   @IsString()
   @IsOptional()

@@ -24,9 +24,9 @@ export class ProfileController {
   }
 
   @Get(':id')
-  profileUser(@Param('id', ParseObjectIdPipe) id: string) {
+  profileUser(@Param('id') id: string) {
     const userId = id;
-    const user = this.blogService.findOne(userId);
+    const user = this.usersService.findOne(userId);
 
     if (!user) {
       throw new NotFoundException('user not found');

@@ -4,8 +4,8 @@ import mongoose, { Document, Types } from 'mongoose';
 export type BlogDocument = Blog & Document;
 
 @Schema({ timestamps: true })
-export class Comment { 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true,index: true })
+export class Comment {
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true })
   author!: Types.ObjectId;
 
   @Prop({ required: true })
@@ -21,25 +21,36 @@ export class Blog {
   @Prop({ required: true })
   content!: string;
 
+  @Prop({ required: true })
+  type!: string;
 
-  @Prop({type: String, ref: 'User'})
+
+  @Prop({ type: String })
   logo?: string;
 
-  @Prop({ type: String, ref: 'User' })
+  @Prop({ type: String })
   banner?: string;
-  
+
   @Prop({ type: [String], default: [] })
-  media?: string[]; 
+  media?: string[];
 
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true ,index: true})
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   author!: Types.ObjectId;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   likes!: Types.ObjectId[];
 
+  @Prop({ type: Number, default: 0 })
+  views!: number;
+
+
   @Prop({ type: [CommentSchema], default: [] })
   comments!: Comment[];
+  
+    @Prop({ type: String, default: [] })
+    provider!: string;
+  
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);

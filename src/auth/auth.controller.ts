@@ -19,7 +19,10 @@ export class AuthController {
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto.name, registerDto.email, registerDto.password);
   }
-
+@Post('google')
+  async googleAuth(@Body() body: { email: string; name: string; image: string; googleId: string }) {
+    return this.authService.validateGoogleUser(body);
+  }
   // @UseGuards(JwtAuthGuard)
   // @Get('profile')
   // getProfile(@Request() req) {

@@ -5,7 +5,12 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true,transform: true,forbidNonWhitelisted: true, }))
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    signal: AbortSignal.timeout(5000),
+    credentials: true,
+  });
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true, }))
   const config = new DocumentBuilder()
     .setTitle('Dovcan')
     .setDescription('APi fast good amazing')

@@ -1,22 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request, UseGuards, UseInterceptors, UploadedFile, UploadedFiles, BadRequestException, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, UseGuards, UseInterceptors, UploadedFiles, BadRequestException, Query, Req } from '@nestjs/common';
 import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from './cloudinary.service';
-import type { Multer } from 'multer';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
-
-
+import type { Request as ExpressRequest } from 'express'; 
 @Controller('blog')
 export class BlogController {
-  constructor(private readonly blogService: BlogService, private readonly cloudinaryService: CloudinaryService) { }
+  constructor(
+    private readonly blogService: BlogService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Post('/upload')
   @UseInterceptors(AnyFilesInterceptor())
-  async uploadMedia(@UploadedFiles() files: Array<Express.Multer.File>) {
+  async uploadMedia(@UploadedFiles() files: any) {
     if (!files || files.length === 0) {
       throw new BadRequestException('chose file friest!');
     }
@@ -25,13 +26,11 @@ export class BlogController {
     return { url };
   }
 
-
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createBlogDto: CreateBlogDto, @Request() req) {
     const userId = req.user.userId;
     return this.blogService.create(createBlogDto, userId);
-
   }
 
   @Get()
@@ -40,19 +39,31 @@ export class BlogController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseObjectIdPipe) id: string) {
+  async findOne(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Req() req: ExpressRequest, // ✅ تحديد النوع بـ ExpressRequest
+  ) {
+    const clientIp =
+      (req.headers['x-forwarded-for'] as string) ||
+      req.ip ||
+      req.socket.remoteAddress ||
+      '127.0.0.1';
+
+    await this.blogService.MakeViews(id, clientIp);
     return this.blogService.findOne(id);
   }
 
-
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id', ParseObjectIdPipe) id: string, @Body() updateBlogDto: UpdateBlogDto, @Request() req) {
+  update(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body() updateBlogDto: UpdateBlogDto,
+    @Request() req,
+  ) {
     const userId = req.user.userId;
     const userRole = req.user.role;
     return this.blogService.update(id, updateBlogDto, userId, userRole);
   }
-
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
@@ -62,7 +73,6 @@ export class BlogController {
     return this.blogService.remove(id, userId, userRole);
   }
 
-
   // Toggle Like
   @UseGuards(JwtAuthGuard)
   @Post(':id/like')
@@ -70,6 +80,19 @@ export class BlogController {
     return this.blogService.toggleLike(id, req.user.userId);
   }
 
+  // Views
+  @Post(':id/view')
+  views(@Param('id', ParseObjectIdPipe) id: string, @Req() req: ExpressRequest) {
+    const clientIp =
+      (req.headers['x-forwarded-for'] as string) ||
+      req.ip ||
+      req.socket.remoteAddress ||
+      '127.0.0.1';
+
+    return this.blogService.MakeViews(id, clientIp); // ✅ تم التمرير بنجاح
+  }
+
+  // add comment
   @UseGuards(JwtAuthGuard)
   @Post(':id/comment')
   addComment(
@@ -80,11 +103,9 @@ export class BlogController {
     return this.blogService.addComment(id, req.user.userId, content);
   }
 
-
+  // get comments
   @Get(':id/comments')
   getComments(@Param('id', ParseObjectIdPipe) id: string) {
     return this.blogService.getComments(id);
   }
-
-
 }

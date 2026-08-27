@@ -29,9 +29,13 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   profilephoto?: string;
-  
+
   @ApiProperty({ example: '/src/banner1.png' })
   @IsString()
   @IsOptional()
   banner?: string;
+
+  googleId?: string;
+  provider?: string;
+
 }

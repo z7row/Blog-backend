@@ -30,7 +30,15 @@ export class User {
 
   @Prop({ type: String })
   banner?: string;
+  @Prop()
+  verificationCode!: string;
 
+  @Prop()
+  verificationCodeExpires!: Date;
+
+
+  @Prop()
+  isVerified!: boolean;
 
 }
 
