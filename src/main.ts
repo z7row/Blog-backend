@@ -17,7 +17,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true, }))
   const config = new DocumentBuilder()
     .setTitle('Dovcan')
-    .setDescription('APi fast good amazing')
+    .setDescription('APi fast good amazing ok for you')
     .setVersion('1.0')
     .addTag('Blogs')
     .build();
