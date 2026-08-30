@@ -7,11 +7,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: [
-    process.env.FRONT_END_URL || "",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-  ],
-    signal: AbortSignal.timeout(10000),
+      process.env.FRONT_END_URL,
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+    ].filter(Boolean),
     credentials: true,
   });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true, }))
@@ -23,7 +22,6 @@ async function bootstrap() {
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
-
   await app.listen(process.env.PORT ?? 3003);
 }
 bootstrap();

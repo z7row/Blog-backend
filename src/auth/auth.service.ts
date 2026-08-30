@@ -41,7 +41,7 @@ export class AuthService {
     await this.usersService.create({ name, email, password });
 
 
-    return { message: "check your email for code" };
+    return { message: "check your email for code " };
   }
 
   async validateGoogleUser(dto: { email: string; name: string; image?: string; googleId: string }) {
