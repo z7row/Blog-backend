@@ -108,4 +108,28 @@ export class BlogController {
   getComments(@Param('id', ParseObjectIdPipe) id: string) {
     return this.blogService.getComments(id);
   }
+
+  @UseGuards(JwtAuthGuard)
+@Delete(':blogId/comment/:commentId')
+async deleteComment(
+  @Param('blogId') blogId: string,
+  @Param('commentId') commentId: string,
+  @Req() req: any,
+) {
+  const userId = req.user._id || req.user.userId;
+  return this.blogService.deleteComment(blogId, commentId, userId);
+}
+
+@UseGuards(JwtAuthGuard)
+@Patch(':blogId/comment/:commentId')
+async updateComment(
+  @Param('blogId') blogId: string,
+  @Param('commentId') commentId: string,
+  @Body('content') content: string,
+  @Req() req: any,
+) {
+  const userId = req.user._id || req.user.userId;
+  console.log(req.user)
+  return this.blogService.updateComment(blogId, commentId, userId, content);
+}
 }

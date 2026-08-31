@@ -13,7 +13,7 @@ export class BlogService {
   constructor(@InjectModel(Blog.name) private blogModel: Model<Blog>,
     @InjectModel(Comment.name) private readonly commentModel: Model<Comment>,
     @InjectModel(User.name) private userModel: Model<User>,
-  ) { }private viewedHistory = new Set<string>();
+  ) { } private viewedHistory = new Set<string>();
 
 
 
@@ -104,34 +104,34 @@ export class BlogService {
     return { liked: !hasLiked };
   }
 
-// في blog.service.ts
+  // في blog.service.ts
 
 
-async MakeViews(blogId: string, clientIp: string) {
-  const key = `${blogId}:${clientIp}`;
+  async MakeViews(blogId: string, clientIp: string) {
+    const key = `${blogId}:${clientIp}`;
 
-  // إذا كان هذا الـ IP قد شاهد البوست بالفعل مؤخراً، لا تزد العداد
-  if (this.viewedHistory.has(key)) {
-    const blog = await this.blogModel.findById(blogId);
-    return { views: blog?.views || 0 };
+    // إذا كان هذا الـ IP قد شاهد البوست بالفعل مؤخراً، لا تزد العداد
+    if (this.viewedHistory.has(key)) {
+      const blog = await this.blogModel.findById(blogId);
+      return { views: blog?.views || 0 };
+    }
+
+    // إذا كانت أول مرة: أضف للذاكرة وزد العداد في الداتابيز
+    this.viewedHistory.add(key);
+
+    // حذف الـ Key بعد 12 ساعة لتسمح بمشاهدة جديدة لاحقاً (اختياري)
+    setTimeout(() => this.viewedHistory.delete(key), 12 * 60 * 60 * 1000);
+
+    const blog = await this.blogModel.findByIdAndUpdate(
+      blogId,
+      { $inc: { views: 1 } },
+      { returnDocument: 'after' },
+    );
+
+    if (!blog) throw new NotFoundException('Blog not found');
+
+    return { views: blog.views };
   }
-
-  // إذا كانت أول مرة: أضف للذاكرة وزد العداد في الداتابيز
-  this.viewedHistory.add(key);
-
-  // حذف الـ Key بعد 12 ساعة لتسمح بمشاهدة جديدة لاحقاً (اختياري)
-  setTimeout(() => this.viewedHistory.delete(key), 12 * 60 * 60 * 1000);
-
-  const blog = await this.blogModel.findByIdAndUpdate(
-    blogId,
-    { $inc: { views: 1 } },
-    { returnDocument: 'after' },
-  );
-
-  if (!blog) throw new NotFoundException('Blog not found');
-
-  return { views: blog.views };
-}
 
   // 2. Add Comment
   async addComment(blogId: string, userId: string, content: string) {
@@ -238,21 +238,57 @@ async MakeViews(blogId: string, clientIp: string) {
     };
   }
 
-// in blog.service.ts (NestJS)
-// async incrementViews(blogId: string, clientIp: string) {
-//   const cacheKey = `view:${blogId}:${clientIp}`;
-  
-//   // افحص هل الـ IP ده شاف البوست قريب؟ (استخدام Redis أو CacheManager)
-//   const hasViewed = await this.blogModel.get(cacheKey);
+  // in blog.service.ts (NestJS)
+  // async incrementViews(blogId: string, clientIp: string) {
+  //   const cacheKey = `view:${blogId}:${clientIp}`;
 
-//   if (!hasViewed) {
-//     // زيادة عدد المشاهدات في الداتابيز
-//     await this.blogModel.findByIdAndUpdate(blogId, { $inc: { views: 1 } });
+  //   // افحص هل الـ IP ده شاف البوست قريب؟ (استخدام Redis أو CacheManager)
+  //   const hasViewed = await this.blogModel.get(cacheKey);
+
+  //   if (!hasViewed) {
+  //     // زيادة عدد المشاهدات في الداتابيز
+  //     await this.blogModel.findByIdAndUpdate(blogId, { $inc: { views: 1 } });
+
+  //     // منع التكرار لنفس الـ IP لمدة 24 ساعة (86400 ثانية)
+  //     await this.blogModel.set(cacheKey, true, 86400000);
+  //   }
+  // }
+  async deleteComment(blogId: string, commentId: string, userId: string) {
+    const blog = await this.blogModel.findById(blogId);
+    if (!blog) throw new NotFoundException('Blog not found');
+
+    const comment = blog.comments.find((c: any) => c._id.toString() === commentId);
+    if (!comment) throw new NotFoundException('Comment not found');
+
+    // التأكد من الملكية
+    if (comment.author.toString() !== userId.toString()) {
+      throw new UnauthorizedException('غير مسموح لك بحذف هذا التعليق');
+    }
+
+    blog.comments = blog.comments.filter((c: any) => c._id.toString() !== commentId);
+    await blog.save();
+    return { message: 'تم حذف التعليق بنجاح' };
+  }
+
+  async updateComment(blogId: string, commentId: string, userId: string, content: string) {
+    const blog = await this.blogModel.findById(blogId);
+    if (!blog) throw new NotFoundException('Blog not found');
+
+    const comment = blog.comments.find((c: any) => c._id.toString() === commentId);
+    if (!comment) throw new NotFoundException('Comment not found');
+
+    const commentAuthorId = comment.author?._id?.toString() || comment.author?.toString();
+    const currentUserId = userId?.toString();
+    console.log(commentAuthorId , userId);
     
-//     // منع التكرار لنفس الـ IP لمدة 24 ساعة (86400 ثانية)
-//     await this.blogModel.set(cacheKey, true, 86400000);
-//   }
-// }
+    if (!commentAuthorId || !currentUserId || commentAuthorId !== currentUserId) {
+      throw new UnauthorizedException('You can only update your own comments');
+    }
+
+    comment.content = content;
+    return await blog.save();
+
+  }
 }
 
 

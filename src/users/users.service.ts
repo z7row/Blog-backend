@@ -10,8 +10,8 @@ import { EmailService } from '../email/email.service';
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<User>
-  ,  @Inject(forwardRef(() => EmailService))
-  private emailService: EmailService
+    , @Inject(forwardRef(() => EmailService))
+    private emailService: EmailService
   ) { }
 
   private generateOTP(): string {
@@ -35,13 +35,13 @@ export class UsersService {
       isVerified: false,
     })
     // console.log(createUserDto.email, otp)
-  const sendemail = await this.emailService.sendVerificationEmail(createUserDto.email, otp)
-  if (!sendemail){
+    const sendemail = await this.emailService.sendVerificationEmail(createUserDto.email, otp)
+    if (!sendemail) {
 
-   throw new Error("eror email")
+      throw new Error("eror email")
+    }
+    return createdUser.save();
   }
-  return createdUser.save();
-}
 
 
 
@@ -54,7 +54,15 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not Found 404');
     }
-    return user;
+    const data = {
+      _id: user.id,
+      name: user.name,
+      pio: user.pio,
+      email: user.email,
+      profilephoto: user.profilephoto,
+      banner: user.banner,
+    }
+    return { data };
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
