@@ -47,10 +47,7 @@ export class Blog {
 
   @Prop({ type: [CommentSchema], default: [] })
   comments!: Comment[];
-  
-    @Prop({ type: String, default: [] })
-    provider!: string;
-  
+
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);
