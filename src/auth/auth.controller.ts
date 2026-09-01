@@ -7,7 +7,7 @@ import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
@@ -19,9 +19,22 @@ export class AuthController {
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto.name, registerDto.email, registerDto.password);
   }
-@Post('google')
+  @Post('google')
   async googleAuth(@Body() body: { email: string; name: string; image: string; googleId: string }) {
     return this.authService.validateGoogleUser(body);
+  }
+
+  @Post('social-login')
+  async socialLogin(
+    @Body() body: {
+      email: string;
+      name: string;
+      image?: string;
+      providerId: string;
+      provider: 'google' | 'github'
+    }
+  ) {
+    return this.authService.validateSocialUser(body);
   }
   // @UseGuards(JwtAuthGuard)
   // @Get('profile')

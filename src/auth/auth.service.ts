@@ -43,33 +43,57 @@ export class AuthService {
 
     return { message: "check your email for code " };
   }
-
   async validateGoogleUser(dto: { email: string; name: string; image?: string; googleId: string }) {
-    const userisemailed = await this.usersService.findByEmail(dto.email);
-    if (userisemailed) {
-      const userId = (userisemailed as any)._id || (userisemailed as any).id;
-      const payload = { sub: userId, email: userisemailed.email };
-      const accessToken = this.jwtService.sign(payload);
-       return { accessToken, userisemailed };
+    let user = await this.usersService.findByEmail(dto.email);
+
+    if (!user) {
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+      await this.usersService.create({
+        email: dto.email,
+        name: dto.name,
+        profilephoto: dto.image,
+        googleId: dto.googleId,
+        provider: 'google',
+        password: hashedPassword,
+      });
     }
-    const randomPassword = crypto.randomBytes(16).toString('hex');
-    const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
-    const user = await this.usersService.create({
-      email: dto.email,
-      name: dto.name,
-      profilephoto: dto.image,
-      googleId: dto.googleId,
-      provider: 'google',
-      password: hashedPassword,
-    });
-    // if (!userd) {
-    //   throw new UnauthorizedException('Failed to authenticate with Google');
-    // }
+    const userId = (user as any)._id || (user as any).id;
 
-    const userId = (userisemailed as any)._id || (userisemailed as any).id;
+    const payload = { sub: userId, email: user?.email };
+    const accessToken = this.jwtService.sign(payload);
 
-    const payload = { sub: userId, email: user.email };
+    return { accessToken, user };
+  }
+
+  async validateSocialUser(dto: {
+    email: string;
+    name: string;
+    image?: string;
+    providerId: string;
+    provider: 'google' | 'github';
+  }) {
+    let user = await this.usersService.findByEmail(dto.email);
+
+    if (!user) {
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+      await this.usersService.create({
+        email: dto.email,
+        name: dto.name,
+        profilephoto: dto.image,
+        provider: dto.provider,
+        password: hashedPassword,
+        ...(dto.provider === 'google' && { googleId: dto.providerId }),
+        ...(dto.provider === 'github' && { githubId: dto.providerId }),
+      });
+    }
+
+    const userId = (user as any)._id || (user as any).id;
+    const payload = { sub: userId, email: user?.email };
     const accessToken = this.jwtService.sign(payload);
 
     return { accessToken, user };

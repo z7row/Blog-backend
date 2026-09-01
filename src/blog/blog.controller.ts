@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request, UseGuards, UseInterceptors, UploadedFiles, BadRequestException, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, UseGuards, UseInterceptors, UploadedFiles, BadRequestException, Query, Req, UploadedFile } from '@nestjs/common';
 import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from './cloudinary.service';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
 import type { Request as ExpressRequest } from 'express'; 
@@ -16,14 +16,24 @@ export class BlogController {
 
   @UseGuards(JwtAuthGuard)
   @Post('/upload')
-  @UseInterceptors(AnyFilesInterceptor())
-  async uploadMedia(@UploadedFiles() files: any) {
-    if (!files || files.length === 0) {
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadMedia(@UploadedFile() file: any) {
+  
+   if (!file) { 
       throw new BadRequestException('chose file friest!');
     }
-
-    const url = await this.cloudinaryService.uploadFile(files[0]);
+    const url = await this.cloudinaryService.uploadFile(file);
     return { url };
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('/c/:id')
+  canupdate(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Request() req,
+  ) {
+    const userId = req.user.userId;
+    const userRole = req.user.role;
+    return this.blogService.canupdate(id, userId, userRole);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -41,7 +51,7 @@ export class BlogController {
   @Get(':id')
   async findOne(
     @Param('id', ParseObjectIdPipe) id: string,
-    @Req() req: ExpressRequest, // ✅ تحديد النوع بـ ExpressRequest
+    @Req() req: ExpressRequest, 
   ) {
     const clientIp =
       (req.headers['x-forwarded-for'] as string) ||

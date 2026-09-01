@@ -46,6 +46,17 @@ export class BlogService {
   findOne(id: string) {
     return this.blogModel.findById(id)
   }
+  async canupdate(id: string, userId: string, userRole: string) {
+    const blog = await this.blogModel.findById(id);
+    if (!blog) {
+      throw new NotFoundException('content not found');
+    }
+
+    const authorId = blog.author ? String(blog.author) : null;
+    if (authorId !== String(userId) && userRole !== 'admin') {
+      return false
+    }
+  }
   async update(id: string, updateBlogDto: UpdateBlogDto, userId: string, userRole: string) {
     const user = await this.userModel.findById(userId);
     if (!user || user.name == "Deleted Account") {
@@ -59,7 +70,7 @@ export class BlogService {
     const authorId = blog.author ? String(blog.author) : null;
 
     if (authorId !== String(userId) && userRole !== 'admin') {
-      throw new ForbiddenException('not allowed متخليك في حال امك احسن ومتدخلش علي حاجه يوزر تاني');
+      throw new ForbiddenException('not allowed متخليك في حالك وملكش دعوه بالي ملكش فيه');
     }
 
     return this.blogModel.findByIdAndUpdate(id, updateBlogDto, { returnDocument: 'after' });
@@ -279,8 +290,8 @@ export class BlogService {
 
     const commentAuthorId = comment.author?._id?.toString() || comment.author?.toString();
     const currentUserId = userId?.toString();
-    console.log(commentAuthorId , userId);
-    
+    console.log(commentAuthorId, userId);
+
     if (!commentAuthorId || !currentUserId || commentAuthorId !== currentUserId) {
       throw new UnauthorizedException('You can only update your own comments');
     }

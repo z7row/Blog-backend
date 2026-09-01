@@ -13,6 +13,11 @@ export class CreateBlogDto {
   @IsNotEmpty()
   content!: string;
 
+  @ApiProperty({ example: 'the content' })
+  @IsString()
+  @IsNotEmpty()
+  category!: string;
+
 
   @ApiProperty({ enum: ["post" , "blog"]})
   @IsString()
