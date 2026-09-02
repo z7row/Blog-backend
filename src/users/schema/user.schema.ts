@@ -10,6 +10,8 @@ export class User {
   name!: string;
   @Prop({ type: String, required: false })
   pio!: string;
+  @Prop({ type: String, required: false })
+  goal!: string;
 
   @Prop({ type: String, required: true, unique: true })
   email!: string;

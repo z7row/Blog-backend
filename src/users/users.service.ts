@@ -61,6 +61,7 @@ export class UsersService {
       email: user.email,
       profilephoto: user.profilephoto,
       banner: user.banner,
+      goal: user.goal,
     }
     return { data };
   }
@@ -69,17 +70,26 @@ export class UsersService {
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
-    const { name, pio, profilephoto, banner } = updateUserDto;
+    const { name, pio, profilephoto, banner ,goal } = updateUserDto;
     const updatedUser = await this.userModel.findByIdAndUpdate(
       id,
-      { name, pio, profilephoto, banner },
+      { name, pio, profilephoto, banner ,goal},
       { returnDocument: 'after' }
     );
 
     if (!updatedUser) {
       throw new NotFoundException("user not found");
     }
-    return updatedUser;
+     const data = {
+      _id: updatedUser.id,
+      name: updatedUser.name,
+      pio: updatedUser.pio,
+      email: updatedUser.email,
+      profilephoto: updatedUser.profilephoto,
+      banner: updatedUser.banner,
+      goal: updatedUser.goal,
+    }
+    return { data };
   }
 
   async remove(id: string, userId: string) {

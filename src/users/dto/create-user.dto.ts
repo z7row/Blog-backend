@@ -14,6 +14,11 @@ export class CreateUserDto {
   @IsString()
   pio?: string;
 
+
+  @ApiProperty({ example: 'Devoloper' })
+  @IsString()
+  goal?: string;
+
   @ApiProperty({ example: 'zeyad@example.com' })
   @IsEmail()
   email!: string;
