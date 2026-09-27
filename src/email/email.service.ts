@@ -19,7 +19,6 @@ export class EmailService {
   ) {}
 
   async sendVerificationEmail(targetEmail: string, code: string) {
-
     const apiKey = process.env.BREVO_API_KEY || '';
     const senderEmail = process.env.BREVO_SENDER_EMAIL || '';
     if (!apiKey) {
@@ -28,8 +27,8 @@ export class EmailService {
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'accept': 'application/json',
-        'api-key': process.env.BREVO_API_KEY!,
+        accept: 'application/json',
+        'api-key': apiKey,
         'content-type': 'application/json',
       },
       body: JSON.stringify({
@@ -55,9 +54,9 @@ export class EmailService {
     if (!response.ok) {
       const err = await response.json();
       console.error('Brevo Error:', err);
-      return err
+      return err;
     }
-    return response.ok
+    return response.ok;
   }
 
   async verifyEmail(email: string, code: string) {
@@ -79,7 +78,11 @@ export class EmailService {
     user.verificationCodeExpires = null as any;
     await user.save();
 
-    return user
+    return {
+      verificationCode: null,
+      verificationCodeExpires: null,
+      isVerified: true,
+    };
   }
   private generateOTP(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();

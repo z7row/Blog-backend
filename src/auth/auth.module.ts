@@ -7,9 +7,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EmailModule } from '../email/email.module';
-import { EmailService } from '../email/email.service';
-import { UsersService } from '../users/users.service';
-import { JwtService } from '@nestjs/jwt';
 
 @Module({
    imports: [
@@ -18,7 +15,7 @@ import { JwtService } from '@nestjs/jwt';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '1d' },
+        signOptions: { expiresIn: '7d' },
       }),
       inject: [ConfigService],
     }), UsersModule,
