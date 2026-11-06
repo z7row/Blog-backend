@@ -99,7 +99,7 @@ export class BlogController {
       req.socket.remoteAddress ||
       '127.0.0.1';
 
-    return this.blogService.MakeViews(id, clientIp); // ✅ تم التمرير بنجاح
+    return this.blogService.MakeViews(id, clientIp);
   }
 
   // add comment

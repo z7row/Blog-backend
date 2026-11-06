@@ -115,22 +115,19 @@ export class BlogService {
     return { liked: !hasLiked };
   }
 
-  // في blog.service.ts
-
-
   async MakeViews(blogId: string, clientIp: string) {
     const key = `${blogId}:${clientIp}`;
 
-    // إذا كان هذا الـ IP قد شاهد البوست بالفعل مؤخراً، لا تزد العداد
+    // If this IP has already viewed the post recently, do not increment
     if (this.viewedHistory.has(key)) {
       const blog = await this.blogModel.findById(blogId);
       return { views: blog?.views || 0 };
     }
 
-    // إذا كانت أول مرة: أضف للذاكرة وزد العداد في الداتابيز
+    // First visit: remember the key and increment the counter in the DB
     this.viewedHistory.add(key);
 
-    // حذف الـ Key بعد 12 ساعة لتسمح بمشاهدة جديدة لاحقاً (اختياري)
+    // Remove the key after 12 hours to allow a new view later (optional)
     setTimeout(() => this.viewedHistory.delete(key), 12 * 60 * 60 * 1000);
 
     const blog = await this.blogModel.findByIdAndUpdate(
@@ -249,21 +246,6 @@ export class BlogService {
     };
   }
 
-  // in blog.service.ts (NestJS)
-  // async incrementViews(blogId: string, clientIp: string) {
-  //   const cacheKey = `view:${blogId}:${clientIp}`;
-
-  //   // افحص هل الـ IP ده شاف البوست قريب؟ (استخدام Redis أو CacheManager)
-  //   const hasViewed = await this.blogModel.get(cacheKey);
-
-  //   if (!hasViewed) {
-  //     // زيادة عدد المشاهدات في الداتابيز
-  //     await this.blogModel.findByIdAndUpdate(blogId, { $inc: { views: 1 } });
-
-  //     // منع التكرار لنفس الـ IP لمدة 24 ساعة (86400 ثانية)
-  //     await this.blogModel.set(cacheKey, true, 86400000);
-  //   }
-  // }
   async deleteComment(blogId: string, commentId: string, userId: string) {
     const blog = await this.blogModel.findById(blogId);
     if (!blog) throw new NotFoundException('Blog not found');
@@ -271,7 +253,7 @@ export class BlogService {
     const comment = blog.comments.find((c: any) => c._id.toString() === commentId);
     if (!comment) throw new NotFoundException('Comment not found');
 
-    // التأكد من الملكية
+    // Verify ownership
     if (comment.author.toString() !== userId.toString()) {
       throw new UnauthorizedException('غير مسموح لك بحذف هذا التعليق');
     }
